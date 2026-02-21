@@ -1,0 +1,204 @@
+{
+  "info": {
+    "name": "iDrive API",
+    "_postman_id": "idrive-collection-001",
+    "description": "Postman collection for the iDrive demo backend. Set variable `base_url` to http://<YOUR_IP>:3000 before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://<YOUR_IP>:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/health",
+        "description": "Basic health check"
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"driverId\": \"9652220652\"\n}"
+        },
+        "url": "{{base_url}}/login",
+        "description": "Returns fake token: { token: 'driver-<id>-token' }"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json && json.token) {",
+              "  pm.collectionVariables.set('token', json.token);",
+              "  console.log('Saved token to collection variable: token');",
+              "} else {",
+              "  console.log('No token in response');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get requested rides",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/rides?status=requested",
+        "description": "List rides with status=REQUESTED"
+      }
+    },
+    {
+      "name": "Get all rides (debug)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/__all_rides",
+        "description": "Debug endpoint returning all rides"
+      }
+    },
+    {
+      "name": "Create ride (REQUESTED)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerName\": \"Manual Rider\",\n  \"pickup\": { \"lat\": 12.34, \"lng\": 56.78 },\n  \"dropoff\": { \"lat\": 12.35, \"lng\": 56.79 },\n  \"notes\": \"demo\"\n}"
+        },
+        "url": "{{base_url}}/rides",
+        "description": "Create a new REQUESTED ride"
+      }
+    },
+    {
+      "name": "Get ride by id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/rides/:id",
+        "description": "Replace :id in the URL with an actual ride id"
+      }
+    },
+    {
+      "name": "Accept ride",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/rides/:id/accept",
+        "description": "POST to accept a requested ride. Use an id from Get requested rides."
+      }
+    },
+    {
+      "name": "Start ride",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/rides/:id/start",
+        "description": "Start an accepted ride (same driver only)."
+      }
+    },
+    {
+      "name": "Complete ride",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/rides/:id/complete",
+        "description": "Complete a started ride."
+      }
+    },
+    {
+      "name": "Cancel ride",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/rides/:id/cancel",
+        "description": "Cancel (reverts to REQUESTED) before STARTED."
+      }
+    },
+    {
+      "name": "Post location (live)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"lat\": 17.489092671235824,\n  \"lng\": 78.39321709979151,\n  \"ts\": 1771597770172\n}"
+        },
+        "url": "{{base_url}}/rides/:id/location",
+        "description": "Send a location point for a STARTED ride."
+      }
+    }
+  ]
+}
